@@ -107,14 +107,11 @@ SAMPLE_FILE = os.path.join(APP_DIR, "flood_data.csv")
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2621/2621040.png", width=60)
     st.title("System Controls")
-    uploaded = st.file_uploader("Upload Flood CSV Data", type="csv")
     
-    if uploaded is not None:
-        source = uploaded.getvalue()
-        st.caption(f"Status: `{uploaded.name}` Loaded")
-    else:
-        source = SAMPLE_FILE if os.path.exists(SAMPLE_FILE) else "flood_data.csv"
-        st.caption("Status: Default DB Loaded")
+    # --- UI Upload Widget Removed --- 
+    # The app now safely locks onto your local database
+    source = SAMPLE_FILE if os.path.exists(SAMPLE_FILE) else "flood_data.csv"
+    st.caption("Status: Local Database Loaded")
 
     try:
         years = DataHandling(source).available_years()
