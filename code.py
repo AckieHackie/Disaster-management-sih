@@ -1,5 +1,4 @@
 import csv
-import io
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
@@ -11,8 +10,8 @@ class DataHandling:
         self.year = year         
 
     def available_years(self):
-        f = io.BytesIO(self.file) if isinstance(self.file, bytes) else self.file
-        return sorted(pd.read_csv(f)["Year"].dropna().astype(int).unique().tolist())
+        # Cloud byte-checking removed; safely reads the local CSV directly
+        return sorted(pd.read_csv(self.file)["Year"].dropna().astype(int).unique().tolist())
 
     def load(self):
         return pd.DataFrame(self.file_data())
@@ -20,23 +19,24 @@ class DataHandling:
     def file_data(self):
         data = []        
         
-        lines = self.file.decode("utf-8").splitlines() if isinstance(self.file, bytes) else open(self.file, "r")
-        reader = csv.DictReader(lines)
+        # Cloud byte-decoding removed; safely opens the local file using Python's standard method
+        with open(self.file, "r", encoding="utf-8") as file_data:
+            reader = csv.DictReader(file_data)
 
-        for row in reader:           
-            self.csv_year = int(row["Year"])          
+            for row in reader:            
+                self.csv_year = int(row["Year"])          
 
-            if self.year == self.csv_year:      
-                district_data = {
-                    "district":  row["District"],
-                    "population_affected" : row["Population_Affected"],
-                    "village_damaged" : row["Villages_Damaged"],        
-                    "crop_damage" : row["Crop_Area_Damaged_Hectares"],  
-                    "human_deaths" : row["Human_Lives_Lost"],  
-                    "relief_camps" : row["Relief_Camps_Opened"]
-                }
-                
-                data.append(district_data)
+                if self.year == self.csv_year:      
+                    district_data = {
+                        "district":  row["District"],
+                        "population_affected" : row["Population_Affected"],
+                        "village_damaged" : row["Villages_Damaged"],        
+                        "crop_damage" : row["Crop_Area_Damaged_Hectares"],  
+                        "human_deaths" : row["Human_Lives_Lost"],  
+                        "relief_camps" : row["Relief_Camps_Opened"]
+                    }
+                    
+                    data.append(district_data)
         return data
                     
 class PriorityCalculator():    
