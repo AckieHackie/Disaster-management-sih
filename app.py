@@ -224,7 +224,7 @@ with tab1:
         st.download_button(
             label="Download Secure AI Report (.CSV)",
             data=ranked_df.to_csv(index=False).encode("utf-8"),
-            file_name=f"team_iqx_ai_relief_{selected_year}.csv",
+            file_name=f"Augnesh_ai_relief_{selected_year}.csv",
             mime="text/csv",
             use_container_width=True
         )
