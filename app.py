@@ -144,7 +144,7 @@ except Exception as e:
 
 # Main Header Area
 st.markdown('<h1 class="main-title">Disaster Relief Intelligence System</h1>', unsafe_allow_html=True)
-st.markdown(f'<div class="sub-title">Developed by Team IQX | Dynamic Resource Triage for <b>{selected_year}</b></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="sub-title">Developed by Augnesh | Dynamic Resource Triage for <b>{selected_year}</b></div>', unsafe_allow_html=True)
 
 # Top Metrics Row
 col1, col2, col3, col4 = st.columns(4)
