@@ -20,6 +20,17 @@ st.markdown("""
             color: #f8fafc;
         }
         
+        /* --- FOOLPROOF ARROW REMOVAL --- */
+        [data-testid="stSidebarCollapseButton"],
+        [data-testid="collapsedControl"] {
+            display: none !important;
+        }
+        
+        header { 
+            visibility: hidden !important; 
+            display: none !important; 
+        }
+        
         /* Metric Card Glassmorphism & Animations */
         div[data-testid="stMetric"] {
             background: rgba(30, 41, 59, 0.4) !important;
@@ -69,11 +80,6 @@ st.markdown("""
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Remove the Sidebar Collapse Button to permanently lock it open */
-        [data-testid="collapsedControl"] {
-            display: none;
-        }
-
         /* AI Badge */
         .ai-pulse {
             display: inline-block;
@@ -86,8 +92,6 @@ st.markdown("""
             font-weight: 600;
             margin-bottom: 10px;
         }
-
-        header, footer { visibility: hidden; }
         
         /* Tab Styling */
         .stTabs [data-baseweb="tab-list"] {
@@ -109,14 +113,10 @@ st.markdown("""
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_FILE = os.path.join(APP_DIR, "flood_data.csv")
 
-# ----------------------------------------------------------------
-# SIDEBAR CONTROLS RESTORED
-# ----------------------------------------------------------------
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2621/2621040.png", width=60)
     st.title("System Controls")
     
-    # File upload logic completely removed, locked to local DB
     source = SAMPLE_FILE if os.path.exists(SAMPLE_FILE) else "flood_data.csv"
     st.caption("Status: Local Database Loaded")
 
@@ -134,7 +134,6 @@ with st.sidebar:
     st.caption("**Model:** Random Forest Regressor")
     st.caption("**Trees:** 100 Estimators")
     st.caption("**Target:** Logistics Prediction")
-# ----------------------------------------------------------------
 
 try:
     dh = DataHandling(source, selected_year)
@@ -238,7 +237,6 @@ with tab2:
     st.subheader("Random Forest Feature Geometry")
     st.markdown("This 3D spatial plot demonstrates how the AI maps multi-dimensional disaster metrics (Lives Lost vs. Villages Damaged) to output its final resource prediction (Z-Axis).")
     
-    # 3D Plotly Chart for Maximum Presentation Impact
     fig_3d = px.scatter_3d(
         ranked_df,
         x='Human_Lives_Lost',
