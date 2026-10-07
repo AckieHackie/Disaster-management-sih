@@ -5,7 +5,7 @@ import plotly.express as px
 from code import DataHandling, PriorityCalculator
 
 st.set_page_config(
-    page_title="AI Relief Allocator | Team IQX",
+    page_title="AI Relief Allocator | Augnesh",
     page_icon="🚨",
     layout="wide",
     initial_sidebar_state="expanded"
