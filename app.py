@@ -94,7 +94,7 @@ except Exception as e:
     st.stop()
 
 st.title("Disaster Relief Allocation System")
-st.caption(f"District-level flood impact assessment and resource prioritization for **{selected_year}**.")
+st.caption(f"District-level flood impact assessment powered by K-Means ML categorization for **{selected_year}**.")
 
 st.write("")
 
@@ -106,7 +106,8 @@ with col1:
 
 with col2:
     with st.container(border=True):
-        st.metric("Districts Assessed", len(ranked_df))
+        total_ai_camps = ranked_df["AI_Recommended_Camps"].sum()
+        st.metric("AI Predicted Camps Needed", int(total_ai_camps))
 
 with col3:
     top_district = ranked_df.iloc[0]["District"]
@@ -133,7 +134,8 @@ with left_col:
         orientation="h",
         color="priority_score",
         color_continuous_scale=["#64748b", "#f59e0b", "#dc2626"],
-        text_auto=".3f"
+        text_auto=".3f",
+        hover_data={"AI_Recommended_Camps": True}
     )
     fig.update_layout(
         height=380,
@@ -153,10 +155,9 @@ with right_col:
     st.subheader("Top Action List")
     
     top_table = ranked_df.head(5)[
-        ["District", "Human_Lives_Lost", "Population_Affected", "priority_score"]
+        ["District", "AI_Recommended_Camps", "priority_score"]
     ].rename(columns={
-        "Human_Lives_Lost": "Lives Lost",
-        "Population_Affected": "Affected Pop."
+        "AI_Recommended_Camps": "AI Camps"
     })
     
     st.dataframe(
@@ -168,8 +169,7 @@ with right_col:
                 min_value=0,
                 max_value=float(ranked_df["priority_score"].max())
             ),
-            "Affected Pop.": st.column_config.NumberColumn(format="%d"),
-            "Lives Lost": st.column_config.NumberColumn(format="%d"),
+            "AI Camps": st.column_config.NumberColumn(format="%d")
         },
         use_container_width=True,
         hide_index=True
@@ -183,5 +183,5 @@ with right_col:
         use_container_width=True
     )
 
-with st.expander("Inspect Raw District Dataset"):
+with st.expander("Inspect Raw District Dataset (ML Annotated)"):
     st.dataframe(ranked_df, use_container_width=True, hide_index=True)
