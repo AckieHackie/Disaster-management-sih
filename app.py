@@ -5,7 +5,7 @@ import plotly.express as px
 from code import DataHandling, PriorityCalculator
 
 st.set_page_config(
-    page_title="Flood Relief Allocation",
+    page_title="AI Flood Relief Allocation",
     page_icon="🚨",
     layout="wide"
 )
@@ -54,6 +54,16 @@ st.markdown("""
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
+        .ai-badge {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
 
         header, footer { visibility: hidden; }
     </style>
@@ -81,6 +91,11 @@ with st.sidebar:
         st.stop()
 
     top_n = st.slider("Chart Items", min_value=3, max_value=20, value=8)
+    
+    st.markdown("---")
+    st.subheader("🤖 AI Engine Status")
+    st.success("**Status:** Online & Active")
+    st.info("**Architecture:** Random Forest Regressor\n\n**Estimators:** 100 Decision Trees\n\n**Target:** Resource Forecasting")
 
 try:
     dh = DataHandling(source, selected_year)
@@ -93,8 +108,9 @@ except Exception as e:
     st.error(f"Failed to process dataset: {e}")
     st.stop()
 
+st.markdown('<div class="ai-badge">✦ AI-Powered Platform</div>', unsafe_allow_html=True)
 st.title("Disaster Relief Allocation System")
-st.caption(f"District-level flood impact assessment powered by K-Means ML categorization for **{selected_year}**.")
+st.caption(f"Mathematical triage combined with **Random Forest Machine Learning** resource prediction for **{selected_year}**.")
 
 st.write("")
 
@@ -102,17 +118,17 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     with st.container(border=True):
-        st.metric("State Emergency Index", f"{emergency_index:.2f}")
+        st.metric("State Emergency Index (Math)", f"{emergency_index:.2f}")
 
 with col2:
     with st.container(border=True):
         total_ai_camps = ranked_df["AI_Recommended_Camps"].sum()
-        st.metric("AI Predicted Camps Needed", int(total_ai_camps))
+        st.metric("Total AI Predicted Camps", int(total_ai_camps))
 
 with col3:
     top_district = ranked_df.iloc[0]["District"]
     with st.container(border=True):
-        st.metric("Highest Priority", top_district)
+        st.metric("Critical Priority Zone", top_district)
 
 with col4:
     top_score = ranked_df.iloc[0]["priority_score"]
@@ -124,7 +140,7 @@ st.write("")
 left_col, right_col = st.columns([1.1, 0.9], gap="large")
 
 with left_col:
-    st.subheader("Priority Distribution")
+    st.subheader("Triage Priority Distribution")
     chart_df = ranked_df.head(top_n).sort_values("priority_score", ascending=True)
     
     fig = px.bar(
@@ -141,7 +157,7 @@ with left_col:
         height=380,
         margin=dict(l=0, r=20, t=10, b=10),
         coloraxis_showscale=False,
-        xaxis_title="Severity Score",
+        xaxis_title="Mathematical Severity Score",
         yaxis_title=None,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -152,36 +168,42 @@ with left_col:
     st.plotly_chart(fig, use_container_width=True)
 
 with right_col:
-    st.subheader("Top Action List")
+    st.subheader("🤖 AI Deployment Roster")
     
     top_table = ranked_df.head(5)[
         ["District", "AI_Recommended_Camps", "priority_score"]
     ].rename(columns={
-        "AI_Recommended_Camps": "AI Camps"
+        "AI_Recommended_Camps": "AI Camps Needed"
     })
     
     st.dataframe(
         top_table,
         column_config={
             "priority_score": st.column_config.ProgressColumn(
-                "Priority Score",
+                "Triage Score",
                 format="%.3f",
                 min_value=0,
                 max_value=float(ranked_df["priority_score"].max())
             ),
-            "AI Camps": st.column_config.NumberColumn(format="%d")
+            "AI Camps Needed": st.column_config.NumberColumn(format="%d ⛺")
         },
         use_container_width=True,
         hide_index=True
     )
     
     st.download_button(
-        label="Download Allocation Report (.CSV)",
+        label="Download AI Allocation Report (.CSV)",
         data=ranked_df.to_csv(index=False).encode("utf-8"),
-        file_name=f"relief_priority_{selected_year}.csv",
+        file_name=f"ai_relief_priority_{selected_year}.csv",
         mime="text/csv",
         use_container_width=True
     )
 
-with st.expander("Inspect Raw District Dataset (ML Annotated)"):
-    st.dataframe(ranked_df, use_container_width=True, hide_index=True)
+st.write("")
+with st.expander("🧠 AI Model Transparency (Random Forest Regressor)"):
+    st.write("This platform utilizes Supervised Machine Learning to eliminate human guesswork in resource deployment. Instead of manually estimating logistics, our Random Forest Regressor analyzes multi-dimensional disaster metrics to forecast exact operational needs.")
+    st.markdown("""
+    *   **Input Features (X):** `Population Affected`, `Villages Damaged`, `Crop Damage`, `Human Deaths`
+    *   **Target Variable (y):** `Relief Camps Required`
+    *   **Ensemble Methodology:** The AI trains 100 independent decision trees on historical state data. Each tree votes on the required resources, and the model averages the output to prevent overfitting and ensure highly stable predictions for ground commanders.
+    """)
