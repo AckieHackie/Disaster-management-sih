@@ -4,11 +4,11 @@ import pandas as pd
 import plotly.express as px
 from code import DataHandling, PriorityCalculator
 
+# Removed initial_sidebar_state since we deleted the sidebar
 st.set_page_config(
     page_title="AI Relief Allocator | Augnesh",
     page_icon="🚨",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # Enterprise-Grade CSS Injection
@@ -63,12 +63,6 @@ st.markdown("""
             margin-bottom: 30px;
         }
 
-        /* Sidebar Styling */
-        section[data-testid="stSidebar"] {
-            background-color: rgba(15, 23, 42, 0.95) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
         /* AI Badge */
         .ai-pulse {
             display: inline-block;
@@ -103,30 +97,34 @@ st.markdown("""
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_FILE = os.path.join(APP_DIR, "flood_data.csv")
+source = SAMPLE_FILE if os.path.exists(SAMPLE_FILE) else "flood_data.csv"
 
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/2621/2621040.png", width=60)
-    st.title("System Controls")
-    
-    # --- UI Upload Widget Removed --- 
-    # The app now safely locks onto your local database
-    source = SAMPLE_FILE if os.path.exists(SAMPLE_FILE) else "flood_data.csv"
-    st.caption("Status: Local Database Loaded")
+# Main Header Area
+st.markdown('<h1 class="main-title">Disaster Relief Intelligence System</h1>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Developed by Augnesh | Dynamic Resource Triage</div>', unsafe_allow_html=True)
 
+# ----------------------------------------------------------------
+# NEW TOP COMMAND ROW (Replacing the Sidebar)
+# ----------------------------------------------------------------
+col_ctrl1, col_ctrl2, col_ctrl3 = st.columns([1, 1, 2])
+
+with col_ctrl1:
     try:
         years = DataHandling(source).available_years()
-        selected_year = st.selectbox("Select Assessment Year", years, index=len(years)-1 if years else 0)
+        selected_year = st.selectbox("Assessment Year", years, index=len(years)-1 if years else 0)
     except Exception as e:
         st.error(f"Error loading years: {e}")
         st.stop()
 
-    top_n = st.slider("Display Limit (Top Districts)", min_value=3, max_value=20, value=8)
-    
-    st.markdown("---")
-    st.markdown('<div class="ai-pulse">● AI Engine Online</div>', unsafe_allow_html=True)
-    st.caption("**Model:** Random Forest Regressor")
-    st.caption("**Trees:** 100 Estimators")
-    st.caption("**Target:** Logistics Prediction")
+with col_ctrl2:
+    top_n = st.slider("Display Limit", min_value=3, max_value=20, value=8)
+
+with col_ctrl3:
+    st.write("") # Vertical spacing to align with inputs
+    st.write("")
+    st.markdown('<div class="ai-pulse">● AI Engine Online: Random Forest</div>', unsafe_allow_html=True)
+
+# ----------------------------------------------------------------
 
 try:
     dh = DataHandling(source, selected_year)
@@ -139,9 +137,7 @@ except Exception as e:
     st.error(f"Failed to process dataset: {e}")
     st.stop()
 
-# Main Header Area
-st.markdown('<h1 class="main-title">Disaster Relief Intelligence System</h1>', unsafe_allow_html=True)
-st.markdown(f'<div class="sub-title">Developed by Augnesh | Dynamic Resource Triage for <b>{selected_year}</b></div>', unsafe_allow_html=True)
+st.write("---")
 
 # Top Metrics Row
 col1, col2, col3, col4 = st.columns(4)
