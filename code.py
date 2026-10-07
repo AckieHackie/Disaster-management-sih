@@ -1,6 +1,7 @@
 import csv
 import io
 import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
 
 print("WELCOME TO DISASTER MANAGEMENT PROJECT")
 
@@ -17,15 +18,15 @@ class DataHandling:
         return pd.DataFrame(self.file_data())
 
     def file_data(self):
-        data = []        #creating an empty list to handle data
+        data = []        
         
         lines = self.file.decode("utf-8").splitlines() if isinstance(self.file, bytes) else open(self.file, "r")
         reader = csv.DictReader(lines)
 
-        for row in reader:           #reader is a pointe, which iterate over csv    
-            self.csv_year = int(row["Year"])          #here csv_year is reads value by csv dynamically
+        for row in reader:           
+            self.csv_year = int(row["Year"])          
 
-            if self.year == self.csv_year:      #comparing year
+            if self.year == self.csv_year:      
                 district_data = {
                     "district":  row["District"],
                     "population_affected" : row["Population_Affected"],
@@ -44,21 +45,19 @@ class PriorityCalculator():
         
     def normalize(self):
         self.scaled_data = []
+        if not self.data: return
 
-        for district in self.data:
-            #minimum data
-            min_pop_affected = min(self.data, key=lambda x: int(x["population_affected"]))["population_affected"]
-            min_village_damaged = min(self.data, key=lambda x: int(x["village_damaged"]))["village_damaged"]
-            min_crop_damaged = min(self.data, key=lambda x: float(x["crop_damage"]))["crop_damage"]
-            min_human_deaths = min(self.data, key=lambda x: int(x["human_deaths"]))["human_deaths"]
-            min_relief_camps = min(self.data, key=lambda x: int(x["relief_camps"]))["relief_camps"]
+        min_pop_affected = min(self.data, key=lambda x: int(x["population_affected"]))["population_affected"]
+        min_village_damaged = min(self.data, key=lambda x: int(x["village_damaged"]))["village_damaged"]
+        min_crop_damaged = min(self.data, key=lambda x: float(x["crop_damage"]))["crop_damage"]
+        min_human_deaths = min(self.data, key=lambda x: int(x["human_deaths"]))["human_deaths"]
+        min_relief_camps = min(self.data, key=lambda x: int(x["relief_camps"]))["relief_camps"]
 
-            # --- Maximum Values ---
-            max_pop_affected = max(self.data, key=lambda x: int(x["population_affected"]))["population_affected"]
-            max_village_damaged = max(self.data, key=lambda x: int(x["village_damaged"]))["village_damaged"]
-            max_crop_damaged = max(self.data, key=lambda x: float(x["crop_damage"]))["crop_damage"]
-            max_human_deaths = max(self.data, key=lambda x: int(x["human_deaths"]))["human_deaths"]
-            max_relief_camps = max(self.data, key=lambda x: int(x["relief_camps"]))["relief_camps"]
+        max_pop_affected = max(self.data, key=lambda x: int(x["population_affected"]))["population_affected"]
+        max_village_damaged = max(self.data, key=lambda x: int(x["village_damaged"]))["village_damaged"]
+        max_crop_damaged = max(self.data, key=lambda x: float(x["crop_damage"]))["crop_damage"]
+        max_human_deaths = max(self.data, key=lambda x: int(x["human_deaths"]))["human_deaths"]
+        max_relief_camps = max(self.data, key=lambda x: int(x["relief_camps"]))["relief_camps"]
 
         for district in self.data:
             pop_div = (int(max_pop_affected) - int(min_pop_affected)) or 1
@@ -84,10 +83,35 @@ class PriorityCalculator():
              
             self.scaled_data.append(obj)
 
+    def apply_rf_ml(self, ranked_df):
+        if len(self.data) < 3:
+            ranked_df["AI_Recommended_Camps"] = ranked_df["Relief_Camps_Opened"]
+            return ranked_df
+
+        ml_df = pd.DataFrame(self.data)
+        
+        # Features (X): The damage metrics
+        features = ["population_affected", "village_damaged", "crop_damage", "human_deaths"]
+        X = ml_df[features].astype(float)
+        
+        # Target (y): The historical relief camps opened
+        y = ml_df["relief_camps"].astype(float)
+
+        # Initialize and fit the Random Forest Regressor
+        rf = RandomForestRegressor(n_estimators=100, random_state=42)
+        rf.fit(X, y)
+        
+        # The AI predicts how many camps are actually needed 
+        predictions = rf.predict(X).round().astype(int)
+        
+        # Map the predictions back to the main dataframe
+        ranked_df["AI_Recommended_Camps"] = predictions
+        
+        return ranked_df
+
     def score(self):
         score_data = []
 
-        #calculating points for district
         for district in self.scaled_data:
             point_dist = (
                 0.50 * district["human_scaled"]
@@ -102,12 +126,7 @@ class PriorityCalculator():
                 "score": point_dist
             })
 
-        # Highest score first
         score_data.sort(key=lambda x: x["score"], reverse=True)
-
-        print("\nTOP 5 PRIORITY DISTRICTS")
-        for district in score_data[:5]:
-            print(f"{district['district']} -> {district['score']:.2f}")
 
         ranked_df = pd.DataFrame(self.data)
         score_map = {x["district"]: x["score"] for x in score_data}
@@ -117,8 +136,12 @@ class PriorityCalculator():
             "district": "District",
             "human_deaths": "Human_Lives_Lost",
             "population_affected": "Population_Affected",
-            "village_damaged": "Villages_Damaged"
+            "village_damaged": "Villages_Damaged",
+            "relief_camps": "Relief_Camps_Opened"
         }).sort_values(by="priority_score", ascending=False)
+
+        # Execute the Random Forest ML Model
+        ranked_df = self.apply_rf_ml(ranked_df)
 
         return ranked_df, sum(x["score"] for x in score_data)
 
