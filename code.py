@@ -10,7 +10,6 @@ class DataHandling:
         self.year = year         
 
     def available_years(self):
-        # Cloud byte-checking removed; safely reads the local CSV directly
         return sorted(pd.read_csv(self.file)["Year"].dropna().astype(int).unique().tolist())
 
     def load(self):
@@ -19,7 +18,6 @@ class DataHandling:
     def file_data(self):
         data = []        
         
-        # Cloud byte-decoding removed; safely opens the local file using Python's standard method
         with open(self.file, "r", encoding="utf-8") as file_data:
             reader = csv.DictReader(file_data)
 
